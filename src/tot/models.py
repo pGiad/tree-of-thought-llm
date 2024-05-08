@@ -1,5 +1,6 @@
 import os
 import openai
+import ollama
 import backoff 
 
 completion_tokens = prompt_tokens = 0
@@ -21,7 +22,10 @@ def completions_with_backoff(**kwargs):
 
 def gpt(prompt, model="gpt-4", temperature=0.7, max_tokens=1000, n=1, stop=None) -> list:
     messages = [{"role": "user", "content": prompt}]
-    return chatgpt(messages, model=model, temperature=temperature, max_tokens=max_tokens, n=n, stop=stop)
+    if model=="gpt-4":
+        return chatgpt(messages, model=model, temperature=temperature, max_tokens=max_tokens, n=n, stop=stop)
+    elif model=="llama3":
+        return llama(messages, model=model, temperature=temperature, max_tokens=max_tokens, n=n, stop=stop)
     
 def chatgpt(messages, model="gpt-4", temperature=0.7, max_tokens=1000, n=1, stop=None) -> list:
     global completion_tokens, prompt_tokens
@@ -34,6 +38,17 @@ def chatgpt(messages, model="gpt-4", temperature=0.7, max_tokens=1000, n=1, stop
         # log completion tokens
         completion_tokens += res["usage"]["completion_tokens"]
         prompt_tokens += res["usage"]["prompt_tokens"]
+    return outputs
+
+def llama(messages, model="llama3", temperature=0.7, max_tokens=1000, n=1, stop=None) -> list:
+    global completion_tokens, prompt_tokens
+    outputs = []
+    while n > 0:
+        cnt = min(n, 20)
+        n -= cnt
+        res = ollama.chat(model='llama3', messages=messages)
+        outputs.extend([res["message"]["content"]])
+        print("LLM Reply:", res["message"]["content"])
     return outputs
     
 def gpt_usage(backend="gpt-4"):
