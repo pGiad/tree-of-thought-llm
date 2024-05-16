@@ -5,10 +5,13 @@ from tot.models import gpt
 
 def get_value(task, x, y, n_evaluate_sample, cache_value=True, model='gpt-4'):
     value_prompt = task.value_prompt_wrap(x, y)
+    # print("Value Prompt: ", value_prompt)
     if cache_value and value_prompt in task.value_cache:
         return task.value_cache[value_prompt]
     value_outputs = gpt(value_prompt, model=model, n=n_evaluate_sample, stop=None)
+    # print("Value Outputs: ", value_outputs)
     value = task.value_outputs_unwrap(x, y, value_outputs)
+    # print("Value Outputs Unwrap: ", value)
     if cache_value:
         task.value_cache[value_prompt] = value
     return value
@@ -33,6 +36,7 @@ def get_votes(task, x, ys, n_evaluate_sample, model='gpt-4'):
 
 def get_proposals(task, x, y, model='gpt-4'): 
     propose_prompt = task.propose_prompt_wrap(x, y)
+    print("Propose Prompt: ", propose_prompt)
     proposals = gpt(propose_prompt, model=model, n=1, stop=None)[0].split('\n')
     return [y + _ + '\n' for _ in proposals]
 
@@ -62,12 +66,14 @@ def solve(args, task, idx, to_print=True):
         elif args.method_generate == 'propose':
             new_ys = [get_proposals(task, x, y, model=model) for y in ys]
         new_ys = list(itertools.chain(*new_ys))
+        print("Proposals: ", new_ys)
         ids = list(range(len(new_ys)))
         # evaluation
         if args.method_evaluate == 'vote':
             values = get_votes(task, x, new_ys, args.n_evaluate_sample, model=model)
         elif args.method_evaluate == 'value':
             values = get_values(task, x, new_ys, args.n_evaluate_sample, model=model)
+        print("Values", values)
 
         # selection
         if args.method_select == 'sample':
@@ -84,6 +90,7 @@ def solve(args, task, idx, to_print=True):
         
         infos.append({'step': step, 'x': x, 'ys': ys, 'new_ys': new_ys, 'values': values, 'select_new_ys': select_new_ys})
         ys = select_new_ys
+        print("##### ys: ", ys)
     
     if to_print: 
         print(ys)
@@ -94,6 +101,6 @@ def naive_solve(args, task, idx, to_print=True):
     gpt = partial(gpt, model=args.backend, temperature=args.temperature)
     print(gpt)
     x = task.get_input(idx)  # input
-    print("Input puzzle: ", x)
+    # print("Input puzzle: ", x)
     ys = get_samples(task, x, '', args.n_generate_sample, args.prompt_sample, stop=None, model=args.backend)
     return ys, {}
