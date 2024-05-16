@@ -24,7 +24,8 @@ def run(args):
 
         # log
         infos = [task.test_output(i, y) for y in ys]
-        info.update({'idx': i, 'ys': ys, 'infos': infos, 'usage_so_far': gpt_usage(args.backend)})
+        info.update({'idx': i, 'ys': ys, 'infos': infos,
+                    'usage_so_far': gpt_usage(args.backend)})
         logs.append(info)
         with open(file, 'w') as f:
             json.dump(logs, f, indent=4)
@@ -33,29 +34,40 @@ def run(args):
         accs = [info['r'] for info in infos]
         cnt_avg += sum(accs) / len(accs)
         cnt_any += any(accs)
-        print(i, 'sum(accs)', sum(accs), 'cnt_avg', cnt_avg, 'cnt_any', cnt_any, '\n')
-    
+        print(i, 'sum(accs)', sum(accs), 'cnt_avg',
+              cnt_avg, 'cnt_any', cnt_any, '\n')
+
+        accuracies = {'sum(accs)': sum(
+            accs), 'cnt_avg': cnt_avg, 'cnt_any': cnt_any}
+        logs.append(accuracies)
+
     n = args.task_end_index - args.task_start_index
-    print(cnt_avg / n, cnt_any / n)
+    print("cnt_avg / n: ", cnt_avg / n, " cnt_any / n: ", cnt_any / n)
     print('usage_so_far', gpt_usage(args.backend))
 
 
 def parse_args():
     args = argparse.ArgumentParser()
-    args.add_argument('--backend', type=str, choices=['gpt-4', 'gpt-3.5-turbo'], default='gpt-4')
+    args.add_argument('--backend', type=str,
+                      choices=['gpt-4', 'gpt-3.5-turbo', 'llama3'], default='llama3')
     args.add_argument('--temperature', type=float, default=0.7)
 
-    args.add_argument('--task', type=str, required=True, choices=['game24', 'text', 'crosswords'])
+    args.add_argument('--task', type=str, required=True,
+                      choices=['game24', 'text', 'crosswords'])
     args.add_argument('--task_start_index', type=int, default=900)
     args.add_argument('--task_end_index', type=int, default=1000)
 
     args.add_argument('--naive_run', action='store_true')
-    args.add_argument('--prompt_sample', type=str, choices=['standard', 'cot'])  # only used when method_generate = sample, or naive_run
+    # only used when method_generate = sample, or naive_run
+    args.add_argument('--prompt_sample', type=str, choices=['standard', 'cot'])
 
-    args.add_argument('--method_generate', type=str, choices=['sample', 'propose'])
+    args.add_argument('--method_generate', type=str,
+                      choices=['sample', 'propose'])
     args.add_argument('--method_evaluate', type=str, choices=['value', 'vote'])
-    args.add_argument('--method_select', type=str, choices=['sample', 'greedy'], default='greedy')
-    args.add_argument('--n_generate_sample', type=int, default=1)  # only thing needed if naive_run
+    args.add_argument('--method_select', type=str,
+                      choices=['sample', 'greedy'], default='greedy')
+    # only thing needed if naive_run
+    args.add_argument('--n_generate_sample', type=int, default=1)
     args.add_argument('--n_evaluate_sample', type=int, default=1)
     args.add_argument('--n_select_sample', type=int, default=1)
 
