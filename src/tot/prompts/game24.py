@@ -1,15 +1,21 @@
 # 5-shot
-standard_prompt = '''Use numbers and basic arithmetic operations (+ - * /) to obtain 24.
+standard_prompt = '''Use numbers and basic arithmetic operations (+ - * /) to obtain 24. Follow the format of the examples below and answer the final problem. Just give the answer of the final question in the format of the examples ("Answer: [your answer]") and DON'T explain it.
+Example 1:
 Input: 4 4 6 8
 Answer: (4 + 8) * (6 - 4) = 24
+Example 2:
 Input: 2 9 10 12
 Answer: 2 * 12 * (10 - 9) = 24
+Example 3:
 Input: 4 9 10 13
 Answer: (13 - 9) * (10 - 4) = 24
+Example 4:
 Input: 1 4 8 8
 Answer: (8 / 4 + 1) * 8 = 24
+Example 5:
 Input: 5 5 5 9
 Answer: 5 + 5 + 5 + 9 = 24
+Final Problem:
 Input: {input}
 '''
 
@@ -49,7 +55,9 @@ Input: {input}
 '''
 
 # 1-shot
-propose_prompt = '''Input: 2 8 8 14
+propose_prompt = '''Follow the format of the following example to give the possible next steps for the final problem. Don't say anything else, except the possible next steps. Just the next steps, without any text like 'Possible next steps:'. Each time the left numbers should be one less than the input.
+Example:
+Input: 2 8 8 14
 Possible next steps:
 2 + 8 = 10 (left: 8 10 14)
 8 / 2 = 4 (left: 4 8 14)
@@ -59,11 +67,13 @@ Possible next steps:
 14 - 8 = 6 (left: 2 6 8)
 14 /  2 = 7 (left: 7 8 8)
 14 - 2 = 12 (left: 8 8 12)
+Final problem:
 Input: {input}
 Possible next steps:
 '''
 
-value_prompt = '''Evaluate if given numbers can reach 24 (sure/likely/impossible)
+value_prompt = '''Evaluate if given numbers can reach 24 (sure/likely/impossible). Follow the format of the following examples and make sure that the your last word is your evaluation (sure/likely/impossible).
+# Examples:
 10 14
 10 + 14 = 24
 sure
@@ -101,6 +111,7 @@ impossible
 (1 + 3) * 3 = 12
 1 3 3 are all too small
 impossible
+# Final problem:
 {input}
 '''
 
